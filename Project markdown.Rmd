@@ -1,0 +1,638 @@
+---
+title: "Chicago Public Schools (CPS)"
+author: "Svetlana Voda"
+date: "11/2/2024"
+output:
+  html_document:
+    df_print: paged
+---
+
+
+```{r, echo=FALSE}
+setwd("C:/Users/vital/Desktop/UNIVERISTY/STAT481/PROJECT")
+apps_data <- read.csv("CPS_ES-HS_ProgressReport_2011-2012.csv", 
+                      header = TRUE, 
+                      na.strings = "")
+
+TI_Fivenum <- function(dataset){
+  x <- sort(dataset)
+  n <- length(x)
+  if(n %% 2 == 1){Q <- fivenum(x[-(n+1)/2])[c(2,4)]}
+  if(n %% 2 == 0){Q <- fivenum(x)[c(2,4)]}
+  minimum <- min(x)
+  med <- median(x)
+  maximum <- max(x)
+  result <- as.data.frame(list(min = minimum, Q1 = Q[1], median = med, Q3 = Q[2], max = maximum))
+  return(result)
+  
+
+
+}
+
+```
+
+### Data Introduction and Description
+
+In this analysis, I aim to examine the primary factors influencing college enrollment rates among students from Chicago Public Schools (CPS). Specifically, I intend to identify which characteristics of CPS schools are most strongly linked to college enrollment outcomes. Using a variety of school-related metrics, I aim to predict college enrollment numbers y=College_Enrollment based on a detailed set of predictors, including:    
+x1 = Average_Student_Attence   
+x2 = Rate_of_Misconducts   
+x3 = Average_Teacher_Attence   
+x4 = X9_Grade_Explore_2009   
+x5 = X11_Grade_Average_ACT_2011   
+x6 = College_Eligibility    
+x7 = Graduation_Rate   
+x8 = Freshman_on_Track_Rate   
+x9 = Probation   
+My goal is to analyze how these predictors correlate with college enrollment rates and to identify the most significant factors.    
+    
+
+My initial step was to identify and remove any rows with missing values to ensure data completeness for the analysis. I discovered that certain columns, such as Freshman_on_Track_Rate had: `r sum(is.na(apps_data$Freshman_on_Track_Rate))` missing values, Graduation_Rate:  `r sum(is.na(apps_data$Graduation_Rate))` missing values, College_Eligibility had:  `r sum(is.na(apps_data$College_Eligibility))`, X11_Grade_Average_ACT_2011 had:  `r sum(is.na(apps_data$X11_Grade_Average_ACT_2011))` , X9_Grade_Explore_2009 had:  `r sum(is.na(apps_data$X9_Grade_Explore_2009))` , and Average_Student_Attence had only `r sum(is.na(apps_data$Average_Student_Attence))` missing value, which I addressed by removing those rows.
+
+```{r, echo=FALSE}
+#Remove rows with missing values in our wanted columns
+apps_data <- apps_data[!is.na(apps_data$Average_Student_Attence) & 
+                         !is.na(apps_data$X9_Grade_Explore_2009) & 
+                         !is.na(apps_data$X11_Grade_Average_ACT_2011) &
+                         !is.na(apps_data$College_Eligibility) &
+                         !is.na(apps_data$Graduation_Rate) &
+                         !is.na(apps_data$Freshman_on_Track_Rate), ]
+
+
+
+```
+
+
+To better understand the factors influencing college enrollment in Chicago Public Schools, I begin with a detailed analysis of each predictor variable under consideration. For each variable, I will:   
+
+* Provide descriptive Statistics – Including the mean, standard deviation, variance, and a five-number summary (minimum, Q1, median, Q3, and maximum) to understand the central tendency and spread.   
+* Visualize Distributions – Using histograms and boxplots to gain insights into the shape, skewness, and potential outliers in the data.   
+* Interpret Results – Highlighting observations about each variable’s distribution and variability to provide context for its potential influence on college enrollment.   
+
+1. To begin, I will analyze the predictor Average_Student_Attendance. This variable represents the average attendance rate of students at each CPS school and is likely to have a significant impact on college enrollment rates. 
+```{r, echo=FALSE} 
+par(mfrow = c(1,2))
+hist(apps_data$Average_Student_Attence, right = FALSE, main = "Average_Student_Attence", col = "tomato" )
+boxplot(apps_data$Average_Student_Attence, main= "Boxplot of Average_Student_Attence", col = "skyblue", horizontal = TRUE)
+par(mfrow = c(1,1))
+
+TI_Fivenum(apps_data$Average_Student_Attence)
+```
+
+Analyzing the histogram and boxplot of the quantitative variable Average_Student_Attendance, I observe that the data is left-skewed with two peaks. From the descriptive statistics, I find that the median is 83.95, the mean is `r mean(apps_data$Average_Student_Attence, na.rm = TRUE)`, the standard deviation is `r sd(apps_data$Average_Student_Attence, na.rm = TRUE)`, and the variance is `r var(apps_data$Average_Student_Attence, na.rm = TRUE)`.  Additionally, the interquartile range (IQR)  is 14.1
+
+
+2. The subsequent predictor examined was Rate_of_Misconducts.   
+
+```{r, echo=FALSE}
+par(mfrow = c(1,2))
+hist(apps_data$Rate_of_Misconducts, right = FALSE, main = "Rate_of_Misconducts", col = "peachpuff" )
+boxplot(apps_data$Rate_of_Misconducts, main= "Boxplot of Rate_of_Misconducts", col = "lightgreen", horizontal = TRUE)
+par(mfrow = c(1,1))
+
+TI_Fivenum(apps_data$Rate_of_Misconducts)
+```
+
+Analyzing the histogram and boxplot of the quantitative variable Rate_of_Misconducts, we observe that the data is right-skewed with one peak and contains four outliers. From the descriptive statistics, I find that the median is 13.9, the mean is `r mean(apps_data$Rate_of_Misconducts, na.rm = TRUE)`, the standard deviation is `r sd(apps_data$Rate_of_Misconducts, na.rm = TRUE)`, and the variance is `r var(apps_data$Rate_of_Misconducts, na.rm = TRUE)`. Additionally, the interquartile range (IQR) is 14.5 .   
+
+3.Following the analysis of Rate_of_Misconducts, the subsequent variable considered is Average_Teacher_Attence.  
+
+```{r, echo=FALSE}
+par(mfrow = c(1,2))
+hist(apps_data$Average_Teacher_Attence, right = FALSE, main = "Average_Teacher_Attence", col = "turquoise" )
+boxplot(apps_data$Average_Teacher_Attence, main= "Boxplot of Average_Teacher_Attence", col = "violet", horizontal = TRUE)
+par(mfrow = c(1,1))
+
+TI_Fivenum(apps_data$Average_Teacher_Attence)
+
+```
+
+Analyzing the histogram and boxplot of the quantitative variable Average_Teacher_Attence, I observe that the data is left-skewed with two peaks. From the descriptive statistics, I find that the median is 95.4, the mean is `r mean(apps_data$Average_Teacher_Attence, na.rm = TRUE)`, the standard deviation is `r sd(apps_data$Average_Teacher_Attence, na.rm = TRUE)`, and the variance is `r var(apps_data$Average_Teacher_Attence, na.rm = TRUE)`. Additionally, the interquartile range (IQR) is 2.2    
+
+4. Following the analysis of Average_Teacher_Attence, the subsequent variable considered is X9_Grade_Explore_2009   
+
+```{r, echo=FALSE}
+par(mfrow = c(1,2))
+hist(apps_data$X9_Grade_Explore_2009, right = FALSE, main = "X9_Grade_Explore_2009", col = "cyan" )
+boxplot(apps_data$X9_Grade_Explore_2009, main= "Boxplot of X9_Grade_Explore_2009", col = "magenta", horizontal = TRUE)
+par(mfrow = c(1,1))
+
+TI_Fivenum(apps_data$X9_Grade_Explore_2009)
+```
+
+Analyzing the histogram and boxplot of the quantitative variable X9_Grade_Explore_2009, I observe that the data is right-skewed with one peak and contains six outliers. From the descriptive statistics, I find that the median is 13.35, the mean is `r mean(apps_data$X9_Grade_Explore_2009, na.rm = TRUE)`, the standard deviation is `r sd(apps_data$X9_Grade_Explore_2009, na.rm = TRUE)`, and the variance is `r var(apps_data$X9_Grade_Explore_2009, na.rm = TRUE)`. Additionally, the interquartile range (IQR) is 2.1
+
+5. The subsequent predictor examined was X11_Grade_Average_ACT_2011
+
+```{r, echo=FALSE}
+par(mfrow = c(1,2))
+hist(apps_data$X11_Grade_Average_ACT_2011, right = FALSE, main = "X11_Grade_Average_ACT_2011", col = "purple" )
+boxplot(apps_data$X11_Grade_Average_ACT_2011, main= "Boxplot of X11_Grade_Average_ACT_2011", col = "pink", horizontal = TRUE)
+par(mfrow = c(1,1))
+
+TI_Fivenum(apps_data$X11_Grade_Average_ACT_2011)
+```
+
+Analyzing the histogram and boxplot of the quantitative variable X11_Grade_Average_ACT_2011, I observe that the data is right-skewed with one peak and contains five outliers. From the descriptive statistics, I find that the median is 15.8, the mean is `r mean(apps_data$X11_Grade_Average_ACT_2011, na.rm = TRUE)`, the standard deviation is `r sd(apps_data$X11_Grade_Average_ACT_2011, na.rm = TRUE)`, and the variance is `r var(apps_data$X11_Grade_Average_ACT_2011, na.rm = TRUE)`. Additionally, the interquartile range (IQR) is 2.1
+
+
+6. The subsequent predictor examined was College_Eligibility   
+
+```{r, echo=FALSE}
+par(mfrow = c(1,2))
+hist(apps_data$College_Eligibility, right = FALSE, main = "College_Eligibility", col = "red" )
+boxplot(apps_data$College_Eligibility, main= "Boxplot of College_Eligibility", col = "yellow", horizontal = TRUE)
+par(mfrow = c(1,1))
+
+TI_Fivenum(apps_data$College_Eligibility)
+```
+
+Analyzing the histogram and boxplot of the quantitative variable College_Eligibility, I observe that the data is right-skewed with one peak and contains six outliers. From the descriptive statistics, I find that the median is 15.9, the mean is `r mean(apps_data$College_Eligibility, na.rm = TRUE)`, the standard deviation is `r sd(apps_data$College_Eligibility, na.rm = TRUE)`, and the variance is `r var(apps_data$College_Eligibility, na.rm = TRUE)`. Additionally, the interquartile range (IQR) is 16.9
+
+7. The next predictor analyzed was Graduation_Rate
+
+```{r, echo=FALSE}
+
+par(mfrow = c(1,2))
+hist(apps_data$Graduation_Rate, right = FALSE, main = "Graduation_Rate", col = "orchid" )
+boxplot(apps_data$Graduation_Rate, main= "Boxplot of Graduation_Rate", col = "lavender", horizontal = TRUE)
+par(mfrow = c(1,1))
+
+TI_Fivenum(apps_data$Graduation_Rate)
+```
+
+Analyzing the histogram and boxplot of the quantitative variable Graduation_Rate, I observe that the data is bell shaped with no outliers. From the descriptive statistics, I find that the median is 61.9, the mean is `r mean(apps_data$Graduation_Rate, na.rm = TRUE)`, the standard deviation is `r sd(apps_data$Graduation_Rate, na.rm = TRUE)`, and the variance is `r var(apps_data$Graduation_Rate, na.rm = TRUE)`. Additionally, the interquartile range (IQR) is 24.1.
+
+8. The next predictor analyzed was Freshman_on_Track_Rate
+
+```{r, echo= FALSE}
+par(mfrow = c(1,2))
+hist(apps_data$Freshman_on_Track_Rate, right = FALSE, main = "Freshman_on_Track_Rate", col = "coral" )
+boxplot(apps_data$Freshman_on_Track_Rate, main= "Boxplot of Freshman_on_Track_Rate", col = "gold", horizontal = TRUE)
+par(mfrow = c(1,1))
+
+TI_Fivenum(apps_data$Freshman_on_Track_Rate)
+```
+
+Analyzing the histogram and boxplot of the quantitative variable Freshman_on_Track_Rate, I observe that the data is LEFT-skewed with one peak and contains one outliers. From the descriptive statistics, I find that the median is 71.65, the mean is `r mean(apps_data$Freshman_on_Track_Rate, na.rm = TRUE)`, the standard deviation is `r sd(apps_data$Freshman_on_Track_Rate, na.rm = TRUE)`, and the variance is `r var(apps_data$Freshman_on_Track_Rate, na.rm = TRUE)`. Additionally, the interquartile range (IQR) is 17.8
+
+9. The next predictor is Probation
+
+```{r, echo=FALSE}
+table_category <-table(apps_data$Probation)
+
+
+barplot(table_category, xlab = "Probation Status", ylab = "Count", col = c("skyblue", "orange"), main = "Frequency of Probation (0 = Not on Probation, 1 = On Probation)")
+
+TI_Fivenum(table_category)
+
+```
+
+Table of Probation
+```
+0     | 1      | 
+----- |------- |
+28    | 46     | 
+
+```
+
+Analyzing the bar plot of probation status, the most common category is 'On Probation,' with 46 students, compared to 28 students who are 'Not on Probation.' The frequency range spans from 28 to 46. This represents 62.2% of students on probation compared to 37.8% not on probation, indicating a significant portion of students are on probation.
+
+
+# Multiple Linear Regression Analysis   
+  
+To predict factors influencing response variable College_Enrollment, I fit a multiple linear regression model with the following predictors:      
+* x1 = Average_Student_Attendance   
+* x2 = Rate_of_Misconducts   
+* x3 = Average_Teacher_Attendance   
+* x4 = 9th_Grade_Explore_2009   
+* x5 = X11_Grade_Average_ACT_2011   
+* x6 = College_Eligibility   
+* x7 = Graduation_Rate   
+* x8 = Freshman_on_Track_Rate   
+* x9 = Probation  
+
+The model was fit using an alpha level of 0.05 for significance testing.   
+
+```{r, echo=FALSE}
+MLR <- lm(apps_data$College_Enrollment~apps_data$Average_Student_Attence + apps_data$Rate_of_Misconducts + apps_data$Average_Teacher_Attence + apps_data$X9_Grade_Explore_2009 + apps_data$X11_Grade_Average_ACT_2011 + apps_data$College_Eligibility + apps_data$Graduation_Rate + apps_data$Freshman_on_Track_Rate + apps_data$Probation)
+
+```
+
+### Multicollinearity Check    
+In regression analysis, multicollinearity occurs when two or more predictor variables are highly correlated, which can distort the results and make it difficult to determine the individual effect of each predictor on the response variable. I use Variance Inflation Factor (VIF) to detect multicollinearity. A VIF value above 5 or 10 often indicates a problematic level of multicollinearity, suggesting that one or more variables may need to be removed. 
+
+```{r, echo=FALSE}
+library(car)
+vif(MLR)
+```
+
+Based on our threshold, I reviewed predictors with VIF values greater than 10 and considered removing those with the highest values to improve model stability. For instance, the predictor X11_Grade_Average_ACT_2011 has a VIF of 32.780, X9_Grade_Explore_2009 has a VIF of 29.28, and College_Eligibility has a VIF of 11.587. I first removed X11_Grade_Average_ACT_2011 and re-ran the VIF test to observe any reductions.
+
+```{r, echo=FALSE}
+MLR1<- lm(apps_data$College_Enrollment~apps_data$Average_Student_Attence + apps_data$Rate_of_Misconducts + apps_data$Average_Teacher_Attence + apps_data$X9_Grade_Explore_2009 + apps_data$College_Eligibility + apps_data$Graduation_Rate + apps_data$Freshman_on_Track_Rate + apps_data$Probation)
+
+vif(MLR1)
+```
+
+After removing 11th_Grade_Average_ACT_2011 from the model, I conducted a Variance Inflation Factor (VIF) analysis and found that the VIF for College_Eligibility had dropped below 10. However, the predictor 9th_Grade_Explore_2009 still exhibited a high VIF of 11.901, indicating persistent multicollinearity, though at a reduced level. To further address multicollinearity, I decided to remove 9th_Grade_Explore_2009 from the model as well.
+
+```{r, echo =FALSE}
+MLR2<- lm(apps_data$College_Enrollment~apps_data$Average_Student_Attence + apps_data$Rate_of_Misconducts + apps_data$Average_Teacher_Attence + apps_data$College_Eligibility + apps_data$Graduation_Rate + apps_data$Freshman_on_Track_Rate + apps_data$Probation)
+vif(MLR2)
+```
+
+After removing 9th_Grade_Explore_2009 and re-running the VIF analysis, I confirmed that all remaining predictors exhibited lower VIF values, indicating that multicollinearity was no longer a concern. This adjustment significantly improves the model, allowing me to proceed with greater confidence in the stability and interpretability of the regression analysis.
+
+### Initial Regression Model   
+
+For this analysis, I employed multiple linear regression to examine how various predictors are associated with the dependent variable, College_Enrollment. 
+The predictors included in the model are:    
+*x1 = Average_Student_Attendance   
+*x2 = Rate_of_Misconducts   
+*x3 = Average_Teacher_Attendance   
+*x4 = College_Eligibility   
+*x5 = Graduation_Rate   
+*x6 = Freshman_on_Track_Rate      
+*x7 = Probation    
+
+
+Multiple linear regression allows us to assess the impact of each predictor on the outcome variable while controlling for the influence of others. This approach helps in understanding the individual and combined effects of these predictors on college_enrollment.
+
+To assess the fit of the model, I first examined the residuals. The histogram below displays the distribution of residuals from the initial full model, providing insight into whether they follow a normal distribution. This check is essential to verify the model's assumptions and to identify any potential issues that may affect the reliability of the regression analysis.
+
+
+
+```{r, echo=FALSE}
+hist(MLR2$residuals,right = FALSE, col = "lightgreen", main = "Histogram of Residuals")
+```
+
+From the histogram, it appears that the residuals are somewhat right-skewed. Most residuals are clustered around 0 and 500. There is also a small portion of negative residuals (below 0), indicating that the model sometimes overpredicts.
+
+### Model Assumptions  
+
+* First I check Linearity   
+
+```{r, echo=FALSE}
+par(mfrow=c(2,4))
+plot(x = apps_data$Average_Student_Attence, y = MLR2$residual)
+abline(h=0, col = "red", lty = 2)
+plot(x = apps_data$Rate_of_Misconducts, y = MLR2$residual)
+abline(h=0, col = "red", lty = 2)
+plot(x = apps_data$Average_Teacher_Attence, y = MLR2$residual)
+abline(h=0, col = "red", lty = 2)
+plot(x = apps_data$College_Eligibility, y = MLR2$residual)
+abline(h=0, col = "red", lty = 2)
+plot(x = apps_data$Graduation_Rate, y = MLR2$residual)
+abline(h=0, col = "red", lty = 2)
+plot(x = apps_data$Freshman_on_Track_Rate, y = MLR2$residual)
+abline(h=0, col = "red", lty = 2)
+plot(x = apps_data$Probation, y = MLR2$residual)
+abline(h=0, col = "red", lty = 2)
+par(mfrow = c(1,1))
+```
+
+Linearity assumption is not met because I have a list one graph that is not good. Average_Student_Attence has a u-shape patter, Rate_of_Misconducts has a fanned pattern , College_Eligibility is not randomly scattered around the horizontal line at zero.
+
+* Second I check Normality   
+
+```{r, echo= FALSE}
+par(mfrow = c(1,2))
+hist(MLR2$residuals,right = FALSE, col = "slategray1", main = "Histogram")
+qqnorm(MLR2$residuals, xlab = "Theoretical Quantiles", ylab = "Sample Quantile")
+qqline(MLR2$residuals)
+par(mfrow = c(1,1))
+```
+
+Analyzing histogram I can conclude that it is skewed right so it does not appear that normality is plausible. From QQ Plot I can see that it does not follow reference line very well especially in the tails, indicate departures from normality. Assumption is not met.
+
+Hypotheses:   
+  H0: Errors are normally distributed   
+  H1: Errors are not normally distributed 
+  
+```{r, echo=FALSE}
+shapiro.test(MLR2$residuals)  
+```
+
+From Shapiro-Wilk Test I can see that the p_value is very small so we Reject H0 (null hypotheses) and can conclude that there are enough evidence that the error are not normally distributed. So, overall this assumption is not met.
+
+* Third check if assumption of Equal Variance is met
+
+```{r, echo=FALSE}
+par(mar=rep(2,4))
+par(mfrow = c(2, 2)) 
+plot(MLR2)
+par(mfrow = c(1,1))
+
+plot(x=MLR2$fitted.values, y=MLR2$residuals)
+abline(h=0, col ='red', lty =2)
+```
+
+Analyzing Residual versus Fitted Values plot the residuals do not appear to have a constant spread around zero. There are some potential outliers (points labeled 44, 27, 12) which might be influencing the residual distribution. Also, we can  see a pattern. This indicates that the assumption of equal variance is violated.
+
+* Check for Independence    
+In this case is not required since it is not time-series data.
+
+Because the assumption of Linearity, Equal Variance, and Normality  are not met we will perform Box-Cox transformation
+
+## Model Transformation
+
+In our analysis, I identified that the assumptions of linear regression, including linearity, equal variance, and normality of residuals, were not met. To address these violations and improve the model's reliability, it is essential to transform the response variable,Y (in our case, College_Enrollment) using Box-Cox transformation. The Box-Cox transformation is a statistical technique used to improve the suitability of data for analysis, especially in linear regression models. It helps address issues like non-constant variance (when the spread of the data varies) and non-normality (when the data does not follow a bell-shaped distribution). By selecting an appropriate value for λ (such as −2, −1, −0.5, 0, 0.5, 1, or 2), we can transform the data to better meet the model assumptions. 
+
+After analyzing the data, I found that the optimal transformation parameter, λ, is 0. Therefore, I will use the logarithmic transformation for College_Enrollment. 
+ 
+```{r, echo= FALSE}
+library(MASS)
+trans <- boxcox(College_Enrollment ~ Average_Student_Attence + Rate_of_Misconducts + Average_Teacher_Attence + College_Eligibility + Graduation_Rate + Freshman_on_Track_Rate + Probation, 
+                data = apps_data,
+                plotit = FALSE,
+                lambda = seq(-2, 2, by = 0.125))
+maxyentry <- which.max(trans$y) # obtain index number of largest y
+trans$x[maxyentry] # obtain lambda value
+
+
+
+```
+
+After applying the Box-Cox transformation, I created a new column in our data frame called logy, which contains the transformed values of the response variable College_Enrollment. This transformation helps to stabilize variance and improve the normality of the data, aligning it more closely with the assumptions required for linear regression analysis.
+
+## Regression Model After Transformation   
+
+With this new column logy established, I re-ran our regression model, using y = logy as the response variable and next predictors:
+* x1 = Average_Student_Attence
+* x2 = Rate_of_Misconducts
+* x3 = Average_Teacher_Attence
+* x4 = College_Eligibility
+* x5 = Graduation_Rate
+* x6 = Freshman_on_Track_Rate
+* x7 = Probation  
+
+```{r, echo=FALSE}
+## Add new column to data frame with transformed variable y
+apps_data$logy <- log(apps_data$College_Enrollment)
+
+MLR3 <- lm(apps_data$logy ~ apps_data$Average_Student_Attence + apps_data$Rate_of_Misconducts + apps_data$Average_Teacher_Attence + apps_data$College_Eligibility + apps_data$Graduation_Rate + apps_data$Freshman_on_Track_Rate + apps_data$Probation)
+
+```
+
+To evaluate the adequacy of the regression model, it is important to assess the behavior of the residuals. The histogram below illustrates the distribution of residuals from the transformed full model, offering a visual indication of whether they approximate a normal distribution. Examining the residual distribution is a critical step in validating the model’s assumptions, as deviations from normality can suggest issues that may impact the robustness and reliability of the analysis.
+
+```{r, echo=FALSE}
+hist(MLR3$residuals,right = FALSE, col = "magenta", main = "Histogram of Residuals")
+```
+
+From the histogram, it appears that shows some deviations from normality, as it appears more uniform than bell-shaped. This lack of a clear bell shape suggests that the residuals may not be perfectly normally distributed, which could indicate potential issues with the model fit.
+
+* First I check Linearity  
+
+```{r, echo=FALSE}
+par(mfrow=c(2,4))
+plot(x = apps_data$Average_Student_Attence, y = MLR3$residual)
+abline(h=0, col = "red", lty = 2)
+plot(x = apps_data$Rate_of_Misconducts, y = MLR3$residual)
+abline(h=0, col = "red", lty = 2)
+plot(x = apps_data$Average_Teacher_Attence, y = MLR3$residual)
+abline(h=0, col = "red", lty = 2)
+plot(x = apps_data$College_Eligibility, y = MLR3$residual)
+abline(h=0, col = "red", lty = 2)
+plot(x = apps_data$Graduation_Rate, y = MLR3$residual)
+abline(h=0, col = "red", lty = 2)
+plot(x = apps_data$Freshman_on_Track_Rate, y = MLR3$residual)
+abline(h=0, col = "red", lty = 2)
+plot(x = apps_data$Probation, y = MLR3$residual)
+abline(h=0, col = "red", lty = 2)
+par(mfrow = c(1,1))
+
+```
+
+Linearity assumption is not met because I have a list one graph that is not good. Some of the residual plots show noticeable patterns.Some plots appear to have groups of residuals with a potential curve, which might indicate some deviation from linearity in certain predictors. Also, there are some mild trends or clusters in a few variables on Average_Teacher_Attence and Probation, which could suggest slight deviations from linearity.
+
+* Second I check Normality  
+
+```{r, echo=FALSE}
+qqnorm(MLR3$residuals, xlab = "Theoretical Quantiles", ylab = "Sample Quantile")
+qqline(MLR3$residuals)
+```
+
+
+From the QQ plot, I can see that the points lie approximately along the reference line, with some deviation at the tails. Since most points closely follow the line, I can conclude that the assumption of normality is reasonably met.
+
+Hypotheses:   
+  H0: Errors are normally distributed   
+  H1: Errors are not normally distributed 
+  
+```{r, echo=FALSE}
+shapiro.test(MLR3$residuals)  
+```
+
+From the Shapiro-Wilk Test, I can see that the p-value is large, so I do not reject H0. Therefore, I can conclude that there is not enough evidence to suggest that the errors are not normally distributed. Thus, the assumption is met.
+
+* Third check if assumption of Equal Variance is met
+
+```{r, echo=FALSE}
+par(mfrow = c(2, 2)) 
+plot(MLR3)
+par(mfrow = c(1,1))
+
+```
+
+Analyzing Residual versus Fitted Values  plot I can conclude the assumption of equal variance seems to be reasonably met, as the spread of residuals appears fairly consistent across the fitted values.
+
+* Check for Independence    
+In this case is not required since it is not time-series data.
+
+### Checking the Significance of the Overall Model(Hypothesis Tests)   
+
+To assess whether the overall model is significant, I employed two approaches to find out : the summary() function and the analysis of variance (ANOVA). The summary() function  provides detailed information about the coefficients, standard errors, and statistical significance of each predictor, and p-value.   
+
+```{r,echo=FALSE}
+summary(MLR3)
+```
+
+The ANOVA test helps evaluate the significance of the entire model by comparing the model's fit against a null model. 
+```{r, echo=FALSE}
+anova(MLR3)
+```
+
+By interpreting the results from both functions, I can determine whether the model as a whole is statistically significant and whether the predictors are collectively meaningful.
+
+Hypotheses:   
+  H0: beta_1= beta_2 = beta_3= beta_4= beta_5= beta_6 = beta_7 = 0   
+  H1: at least one  beta_j  is different 0
+
+As result we see that F-statistic is 2.647 and p-value is 0.01784. We Reject H0 because p-value(0.01783) < alpha(0.05) and can conclude that there is There is enough evidence that the x-variables explain some of the variability in Y. Coefficient of Determination is 0.2192 and Adjuster R-Square is 0.1364. 21.92% of the variability in Y is explained by the regression in X.   
+
+Because overall model is significant I have to test all predictors separately.
+
+* x1 = Average_Student_Attence
+
+Hypotheses:   
+  H0: beta_1 = 0   
+  H1: beta_1 different 0   
+
+From the Partial T-Test values, I see that for Average_Student_Attendance, the t-value is 1.000 and the p-value is 0.32085. Therefore, we Do Not Reject H0 because the p-value (0.32085) is greater than alpha (0.05). To conclude, there is not enough evidence to suggest that X1 (Average_Student_Attendance) is important in explaining some of the variability in Y (logY).
+
+* x2 = Rate_of_Misconducts   
+
+Hypotheses:   
+  H0: beta_2 = 0   
+  H1: beta_2 different 0   
+  
+From the Partial T-Test values, I see that for Rate_of_Misconducts, the t-value is -1.783 and the p-value is 0.07925. Therefore, we Do Dot Deject H0 because the p-value (0.07925) is greater than alpha (0.05). There is not enough evidence to conclude that X2 (Rate_of_Misconducts) is important in explaining some of the variability in Y.
+
+* x3 = Average_Teacher_Attence      
+
+Hypotheses:      
+  H0: beta_3 = 0   
+  H1: beta_3 different 0   
+
+From the Partial T-Test values, I see that for Average_Teacher_Attendance, the t-value is -0.452 and the p-value is 0.65264. Therefore, we Do Not Reject H0 because the p-value (0.65264) is greater than alpha (0.05). There is not enough evidence to conclude that X3 (Average_Teacher_Attendance) is important in explaining some of the variability in Y. 
+
+* x4 = College_Eligibility   
+
+Hypotheses:   
+  H0: beta_4 = 0   
+  H1: beta_4 different 0   
+
+
+From the Partial T-Test values, I see that the statistic for College_Eligibility is 2.246 and the p-value is 0.02804. We Reject H0 because the p-value (0.02804) is less than alpha (0.05). In conclusion, there is enough evidence to suggest that X4 (College_Eligibility) is important in explaining some of the variability in Y.
+
+* x5 = Graduation_Rate
+
+Hypotheses:   
+  H0: beta_5 = 0   
+  H1: beta_5 different 0   
+
+From Partial T-Test Values we see that for Graduation_Rate t-value is 0.592 and p-value is 0.55572 so, Do Not Reject H0 because p-value(0.55572) > alpha(0.05). There is not enough evidence that X5(Graduation_Rate) is important in explaining some of the variability in Y.  
+
+* x6 = Freshman_on_Track_Rate
+  
+Hypotheses:   
+    H0: beta_6 = 0   
+    H1: beta_6 different 0   
+
+From the Partial T-Test values, I see that the statistic for Freshman_on_Track_Rate is -2.674 and the p-value is 0.00944. We Reject H0 because the p-value (0.00944) is less than alpha (0.05). In conclusion, there is enough evidence to suggest that X6 (Freshman_on_Track_Rate) is important in explaining some of the variability in Y.
+
+* x7 = Probation
+
+Hypotheses:   
+    H0: beta_7 = 0   
+    H1: beta_7 different 0   
+
+From the Partial T-Test values, I see that for Probation, the t-value is 1.424 and the p-value is 0.15911. Therefore, we Do Not Reject H0 because the p-value (0.15911) is greater than alpha (0.05). There is not enough evidence to conclude that X7 (Probation) is important in explaining some of the variability in Y.
+
+The analysis shows that the overall model is statistically significant, meaning that some predictors collectively explain part of the variability in college enrollment. However, only College_Eligibility and Freshman_on_Track_Rate are individually significant, indicating they are the most meaningful predictors. 
+
+# Variable Selection   
+
+Since our  model indicates statistical significance overall but includes several predictors that are not individually significant, we proceed with backward selection to refine the model. I use backward elimination based on the Akaike Information Criterion (AIC). Unlike traditional backward selection methods that rely on p-values, backward elimination with AIC optimizes the model by minimizing AIC values—where a lower AIC indicates a better fit while balancing model complexity and predictive power. This approach systematically removes non-significant predictors, allowing us to isolate the most impactful variables for predicting College_Enrollment.
+
+I begin by fitting the full model with y = logy as the response variable all potential predictors: 
+* x1 = Average_Student_Attence
+* x2 = Rate_of_Misconducts
+* x3 = Average_Teacher_Attence
+* x4 = College_Eligibility
+* x5 = Graduation_Rate
+* x6 = Freshman_on_Track_Rate
+* x7 = Probation  
+
+
+The backward elimination process then iteratively removes the predictor that, when eliminated, results in the largest reduction in AIC. This process continues until no further reduction in AIC is possible, resulting in a model that retains only the most informative predictors. 
+
+```{r, echo=FALSE}
+dataset1 <- data.frame(logy = apps_data$logy,
+                         x1 = apps_data$Average_Student_Attence,
+                         x2 = apps_data$Rate_of_Misconducts,
+                         x3 = apps_data$Average_Teacher_Attence,
+                         x4 = apps_data$College_Eligibility,
+                         x5 = apps_data$Graduation_Rate,
+                         x6= apps_data$Freshman_on_Track_Rate,
+                         x7 = apps_data$Probation) ## want to have a dataset with only the transformed variables in it
+  full = lm(logy ~ ., data = dataset1) ## Saves the full model (same as lm.data)
+  MLR4 <- stepAIC(full, data = dataset1, direction = "backward")
+  
+
+```
+
+The first predictor removed was Average_Student_Attence, followed by Graduation_Rate, Average_Student_Attence, and Probation. Thus, my final best statistical model is:   
+log(Y)= beta_0 + beta_2(X2) + beta_4(X4) + beta_6(X6)   
+
+To check if the final best model is good, we need to look at the residuals. The histogram below shows their distribution of residuals from the transformed model, helping us see if they follow a normal distribution. This check is important because if the residuals deviate from normality, it could affect the model's reliability.
+
+```{r, echo =FALSE}
+
+hist(MLR4$residuals,right = FALSE, col = "orange", main = "Histogram of Residuals")
+```
+
+The histogram shows that the residuals are somewhat symmetric and bell-shaped.
+
+* First I check Linearity  
+
+```{r, echo=FALSE}
+par(mfrow=c(2,2))
+plot(x = dataset1$x2, y = MLR4$residual)
+abline(h=0, col = "red", lty = 2)
+plot(x = dataset1$x4, y = MLR4$residual)
+abline(h=0, col = "red", lty = 2)
+plot(x = dataset1$x6, y = MLR4$residual)
+abline(h=0, col = "red", lty = 2)
+par(mfrow = c(1,1))
+
+```
+
+The residuals appear randomly scattered without any clear pattern, suggesting that the linearity assumption is likely met.
+
+* Second I check Normality    
+
+```{r, echo=FALSE}
+par(mfrow = c(1,2))
+hist(MLR4$residuals,right = FALSE, col = "violet", main = "Histogram")
+qqnorm(MLR4$residuals, xlab = "Theoretical Quantiles", ylab = "Sample Quantile")
+qqline(MLR4$residuals)
+par(mfrow = c(1,1))
+```
+  
+Analyzing histogram I can conclude that it is bell-shaped so it does appear that normality is plausible. From QQ Plot I can see that the points lie approximately along the reference line, except for some deviation at the tails. If most points closely follow the line, we can say that the assumption of normality is reasonably met.
+
+Hypotheses:      
+  H0: Errors are normally distributed       
+  H1: Errors are not normally distributed    
+  
+```{r, echo=FALSE}
+shapiro.test(MLR4$residuals)  
+```
+
+From Shapiro-Wilk Test I can see that the p_value is large so we Do Not Reject H0. We can conclude that there is not  enough evidence that the error are not normally distributed. Assumption is met. 
+
+* Third check if assumption of Equal Variance is met
+
+```{r, echo=FALSE}
+par(mfrow=c(2,2))
+plot(MLR4)
+par(mfrow = c(1,1))
+```
+
+Analyzing the Residuals versus Fitted Values plot, the residuals do not show a clear funnel shape, so the assumption is met.
+
+* Check for Independence       
+In this case is not required since it is not time-series data.    
+
+# Conclusion   
+
+The final model for predicting Y is given by the following equation:   
+log(Y)= 8.033117-0.012105(X2)+0.011393(X4)-0.017559(X6) + error      
+
+* log(Y) represents College_Enrollment   
+* X2 = Rate_of_Misconducts   
+* x4 = College_Eligibility   
+* x6 = Freshman_on_Track_Rate   
+
+This equation demonstrates that College_Enrollment is influenced by several factors, with the Rate_of_Misconducts, College_Eligibility, and Freshman_on_Track_Rate each playing a distinct role. According to the overall model, 21.92% of the variability in College_Enrollment is explained by these predictors collectively. However, when selecting the best subset of predictors, the model explains 18.50% of the variability in  College_Enrollment.   
+
+As X2 increase by 1 unit, OR(logy) decrease by 0.0121 units.   
+As X2 increases by 1 unit, yhat descrease by (exp(-0.0121) - 1)*100% = -1.202%   
+
+As X4 increase by 1 unit, OR(logy) increase by 0.0114 units.   
+As X4 increases by 1 unit, yhat increase by (exp(0.0114) - 1)*100% = 1.147%   
+
+As X6 increase by 1 unit, OR(logy) decrease by 0.0176 units.   
+As X6 increases by 1 unit, yhat descrease by (exp(-0.0176) - 1)*100% = -1.745%   
