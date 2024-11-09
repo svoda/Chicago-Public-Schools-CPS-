@@ -629,10 +629,10 @@ log(Y)= 8.033117-0.012105(X2)+0.011393(X4)-0.017559(X6) + error
 This equation demonstrates that College_Enrollment is influenced by several factors, with the Rate_of_Misconducts, College_Eligibility, and Freshman_on_Track_Rate each playing a distinct role. According to the overall model, 21.92% of the variability in College_Enrollment is explained by these predictors collectively. However, when selecting the best subset of predictors, the model explains 18.50% of the variability in  College_Enrollment.   
 
 As X2 increase by 1 unit, OR(logy) decrease by 0.0121 units.   
-As X2 increases by 1 unit, yhat descrease by (exp(-0.0121) - 1)*100% = -1.202%   
+As X2 increases by 1 unit, yhat descrease by (exp(-0.0121) - 1)*100% = 1.202%   
 
 As X4 increase by 1 unit, OR(logy) increase by 0.0114 units.   
 As X4 increases by 1 unit, yhat increase by (exp(0.0114) - 1)*100% = 1.147%   
 
 As X6 increase by 1 unit, OR(logy) decrease by 0.0176 units.   
-As X6 increases by 1 unit, yhat descrease by (exp(-0.0176) - 1)*100% = -1.745%   
+As X6 increases by 1 unit, yhat descrease by (exp(-0.0176) - 1)*100% = 1.745%   
